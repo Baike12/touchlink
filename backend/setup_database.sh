@@ -9,6 +9,11 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# 获取当前脚本所在目录
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd "$SCRIPT_DIR"
+echo -e "${GREEN}当前工作目录: $(pwd)${NC}"
+
 # 检查Python是否安装
 if ! command -v python3 &> /dev/null; then
     echo -e "${RED}错误: 未找到Python3，请先安装Python3${NC}"
@@ -28,24 +33,26 @@ if ! command -v mysql &> /dev/null; then
 fi
 
 # 检查.env文件是否存在
-if [ ! -f "backend/.env" ]; then
+if [ ! -f ".env" ]; then
     echo -e "${YELLOW}警告: 未找到.env文件，将使用.env.example创建${NC}"
-    if [ -f "backend/.env.example" ]; then
-        cp backend/.env.example backend/.env
+    if [ -f ".env.example" ]; then
+        cp .env.example .env
         echo -e "${GREEN}已创建.env文件，请根据需要修改配置${NC}"
     else
         echo -e "${RED}错误: 未找到.env.example文件${NC}"
+        echo -e "${RED}目录内容:${NC}"
+        ls -la
         exit 1
     fi
 fi
 
 # 安装必要的Python包
 echo -e "${GREEN}正在安装必要的Python包...${NC}"
-pip3 install -r backend/requirements.txt
+pip3 install -r requirements.txt
 
 # 运行数据库初始化脚本
 echo -e "${GREEN}正在初始化数据库...${NC}"
-cd backend && python3 init_database.py
+python3 init_database.py
 
 # 检查执行结果
 if [ $? -eq 0 ]; then
