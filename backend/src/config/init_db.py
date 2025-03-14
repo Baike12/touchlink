@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 import uuid
 import os
 import sqlalchemy as sa
+import urllib.parse
 
 from src.core.models import Base, User
 from src.config.database import engine, get_db
@@ -28,9 +29,12 @@ def init_db():
 def init_user_database():
     """初始化用户数据库"""
     try:
+        # 处理密码中的特殊字符
+        password = urllib.parse.quote_plus(settings.DB_PASSWORD)
+        
         # 创建数据库连接
         admin_engine = sa.create_engine(
-            f"mysql+pymysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/mysql"
+            f"mysql+pymysql://{settings.DB_USER}:{password}@{settings.DB_HOST}:{settings.DB_PORT}/mysql"
         )
         
         # 创建用户数据库
@@ -42,7 +46,7 @@ def init_user_database():
         
         # 创建用户数据库连接
         user_db_engine = sa.create_engine(
-            f"mysql+pymysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.USER_DB_NAME}"
+            f"mysql+pymysql://{settings.DB_USER}:{password}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.USER_DB_NAME}"
         )
         
         # 创建用户表信息表
