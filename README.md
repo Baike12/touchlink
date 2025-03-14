@@ -64,6 +64,51 @@ touchlink/
 
 ## 快速开始
 
+### 数据库设置
+
+1. 确保已安装MySQL服务器
+
+```bash
+# Ubuntu/Debian
+sudo apt install mysql-server
+
+# CentOS/RHEL
+sudo yum install mysql-server
+sudo systemctl start mysqld
+```
+
+2. 配置数据库连接
+
+编辑`backend/.env`文件，设置MySQL连接信息：
+
+```
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=touchlink
+USER_DB_NAME=user_database
+```
+
+3. 初始化数据库
+
+使用提供的脚本自动创建数据库和表：
+
+```bash
+# 给脚本添加执行权限
+chmod +x backend/setup_database.sh
+
+# 运行脚本
+./backend/setup_database.sh
+```
+
+或者手动初始化：
+
+```bash
+cd backend
+python init_database.py
+```
+
 ### 后端
 
 1. 安装依赖
@@ -73,7 +118,7 @@ cd backend
 pip install -r requirements.txt
 ```
 
-2. 创建.env文件
+2. 创建.env文件（如果尚未创建）
 
 ```bash
 cp backend/.env.example backend/.env
