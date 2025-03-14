@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue测试页面</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .test-box {
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vue测试页面</h1>
+  
+  <div id="app" class="test-box">
+    <h2>{{ message }}</h2>
+    <p>计数器: {{ counter }}</p>
+    <button @click="increment">增加</button>
+  </div>
+
+  <script>
+    const { createApp } = Vue
+    
+    createApp({
+      data() {
+        return {
+          message: 'Vue 3 测试应用',
+          counter: 0
+        }
+      },
+      methods: {
+        increment() {
+          this.counter++
+        }
+      },
+      mounted() {
+        console.log('Vue应用已挂载')
+      }
+    }).mount('#app')
+  </script>
+</body>
+</html> 

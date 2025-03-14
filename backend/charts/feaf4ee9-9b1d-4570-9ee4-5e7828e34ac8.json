@@ -1,0 +1,1 @@
+{"id": "feaf4ee9-9b1d-4570-9ee4-5e7828e34ac8", "type": "bar", "config": {"title": "\u5206\u6790\u7ed3\u679c\u56fe\u8868", "xAxis": {"field": "order_id"}, "yAxis": {"name": "\u503c"}, "series": [{"name": "customer_id", "field": "customer_id"}]}, "created_at": "2025-03-12T10:28:47.078583"}

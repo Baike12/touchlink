@@ -1,0 +1,1 @@
+{"id": "449d06d3-a5d7-4928-b85b-da7c0dd46c21", "type": "bar", "config": {"title": "\u5206\u6790\u7ed3\u679c\u56fe\u8868", "xAxis": {"field": "item_id"}, "yAxis": {"name": "\u503c"}, "series": [{"name": "item_id", "field": "item_id"}]}, "created_at": "2025-03-12T10:09:34.903731"}

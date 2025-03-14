@@ -1,0 +1,1 @@
+{"id": "c5bee26c-bb4f-4175-95e5-088c487d233a", "type": "line", "config": {"title": "\u5206\u6790\u7ed3\u679c\u56fe\u8868", "xAxis": {"field": "product_id"}, "yAxis": {"name": "\u503c"}, "series": [{"name": "customer_id", "field": "customer_id"}]}, "created_at": "2025-03-12T10:32:35.442928"}

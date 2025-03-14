@@ -1,0 +1,87 @@
+-- 初始化元数据库表
+
+-- 数据源表
+CREATE TABLE IF NOT EXISTS data_sources (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    config JSON NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 分析任务表
+CREATE TABLE IF NOT EXISTS analysis_tasks (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    pipeline JSON NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    result_path VARCHAR(255),
+    datasource_id VARCHAR(36),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 导出任务表
+CREATE TABLE IF NOT EXISTS export_tasks (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    config JSON NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    result_path VARCHAR(255),
+    analysis_task_id VARCHAR(36),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 图表表
+CREATE TABLE IF NOT EXISTS charts (
+    id VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    type VARCHAR(50) NOT NULL,
+    config TEXT NOT NULL,
+    data_source TEXT,
+    analysis_task_id VARCHAR(36),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 仪表盘表
+CREATE TABLE IF NOT EXISTS dashboards (
+    id VARCHAR(36) PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    layout TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 仪表盘项目表
+CREATE TABLE IF NOT EXISTS dashboard_items (
+    id VARCHAR(36) PRIMARY KEY,
+    dashboard_id VARCHAR(36) NOT NULL,
+    chart_id VARCHAR(36) NOT NULL,
+    position_x VARCHAR(10) NOT NULL,
+    position_y VARCHAR(10) NOT NULL,
+    width VARCHAR(10) NOT NULL,
+    height VARCHAR(10) NOT NULL,
+    config TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 数据分析模板表
+CREATE TABLE IF NOT EXISTS analytics_templates (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' COMMENT '用户ID',
+    name VARCHAR(100) NOT NULL COMMENT '模板名称',
+    description VARCHAR(255) COMMENT '模板描述',
+    datasource_id VARCHAR(36) NOT NULL COMMENT '数据源ID',
+    tables TEXT NOT NULL COMMENT '选择的表',
+    columns TEXT NOT NULL COMMENT '选择的列',
+    join_relationships TEXT COMMENT 'JOIN关系',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+); 
