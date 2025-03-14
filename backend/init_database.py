@@ -151,7 +151,6 @@ def init_main_tables():
             conn.execute(sa.text("""
             CREATE TABLE IF NOT EXISTS analytics_templates (
                 id VARCHAR(36) PRIMARY KEY,
-                user_id VARCHAR(36) NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000' COMMENT '用户ID',
                 name VARCHAR(100) NOT NULL COMMENT '模板名称',
                 description VARCHAR(255) COMMENT '模板描述',
                 datasource_id VARCHAR(36) NOT NULL COMMENT '数据源ID',
