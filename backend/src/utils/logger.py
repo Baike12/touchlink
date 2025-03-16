@@ -16,11 +16,23 @@ LOG_LEVELS = {
 # 默认日志格式
 DEFAULT_LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 
+# 获取项目根目录
+def get_project_root():
+    """获取项目根目录"""
+    # 当前文件所在目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 向上三级目录即为项目根目录 (backend/src/utils -> backend/src -> backend -> root)
+    return os.path.abspath(os.path.join(current_dir, "..", "..", ".."))
+
+# 项目根目录
+PROJECT_ROOT = get_project_root()
+# 默认日志文件路径
+DEFAULT_LOG_FILE = os.path.join(PROJECT_ROOT, "logs", "backend.log")
 
 def setup_logger(
     name: str,
     log_level: str = "info",
-    log_file: str = None,
+    log_file: str = DEFAULT_LOG_FILE,
     log_format: str = DEFAULT_LOG_FORMAT,
     max_file_size: int = 10 * 1024 * 1024,  # 10MB
     backup_count: int = 5
@@ -81,5 +93,5 @@ def setup_logger(
 default_logger = setup_logger(
     "touchlink",
     log_level=os.getenv("LOG_LEVEL", "info"),
-    log_file=os.getenv("LOG_FILE", "logs/touchlink.log")
+    log_file=DEFAULT_LOG_FILE
 ) 

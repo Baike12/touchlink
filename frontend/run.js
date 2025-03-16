@@ -3,8 +3,19 @@ const { spawn, execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+// 获取项目根目录
+const getProjectRoot = () => {
+  // 当前文件所在目录
+  const currentDir = __dirname;
+  // 向上一级目录即为项目根目录 (frontend -> root)
+  return path.resolve(currentDir, '..');
+};
+
+// 项目根目录
+const PROJECT_ROOT = getProjectRoot();
+
 // 确保日志目录存在
-const logDir = path.join(__dirname, 'logs');
+const logDir = path.join(PROJECT_ROOT, 'logs');
 if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir, { recursive: true });
 }
@@ -92,11 +103,21 @@ if (!portIsAvailable) {
 
 console.log(`启动前端，日志将写入: ${logFile}`);
 
+// 保存进程ID到文件
+const pidFile = path.join(logDir, 'frontend.pid');
+const savePid = (pid) => {
+  fs.writeFileSync(pidFile, pid.toString());
+  console.log(`前端进程ID已保存到: ${pidFile}`);
+};
+
 // 启动前端开发服务器，指定端口为3000，并强制使用该端口
 const process = spawn('npm', ['run', 'dev', '--', '--port', '3000', '--strictPort'], {
   cwd: __dirname,
   stdio: ['ignore', 'pipe', 'pipe']
 });
+
+// 保存进程ID
+savePid(process.pid);
 
 // 将输出重定向到日志文件
 process.stdout.pipe(logStream);
