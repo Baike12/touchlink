@@ -1,4 +1,4 @@
-import { get, post } from './index'
+import { get, post, del } from './index'
 
 // 数据源类型
 export interface DataSourceConfig {
@@ -115,5 +115,5 @@ export function getDataSourceDetail(id: string) {
 
 // 删除数据源
 export function deleteDataSource(id: string) {
-  return fetch(`/api/v1/datasources/${id}`, { method: 'DELETE' })
+  return del(`/v1/datasources/${id}`)
 } 
