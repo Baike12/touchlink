@@ -24,7 +24,7 @@ app = FastAPI(
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,  # 从设置中读取允许的源
+    allow_origins=["*"],  # 允许所有源，简化开发
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,7 +43,7 @@ async def root():
 @app.get("/health")
 async def health_check():
     """健康检查接口"""
-    return {"status": "ok"}
+    return {"status": "ok", "message": "服务正常运行"}
 
 # 应用启动事件
 @app.on_event("startup")
