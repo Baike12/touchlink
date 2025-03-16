@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { get, post } from './index'
 
 // 定义类型
 export interface Column {
@@ -13,24 +13,20 @@ export interface TableForm {
 
 // 创建表
 export const createTable = async (tableForm: TableForm) => {
-  const response = await axios.post('/api/v1/user-tables', tableForm)
-  return response.data
+  return post('/api/v1/user-tables', tableForm)
 }
 
 // 添加数据
 export const addTableData = async (tableName: string, data: Record<string, any>) => {
-  const response = await axios.post(`/api/v1/user-tables/${tableName}/data`, data)
-  return response.data
+  return post(`/api/v1/user-tables/${tableName}/data`, data)
 }
 
 // 获取表数据
 export const getTableData = async (tableName: string) => {
-  const response = await axios.get(`/api/v1/user-tables/${tableName}/data`)
-  return response.data
+  return get(`/api/v1/user-tables/${tableName}/data`)
 }
 
 // 获取所有用户表
 export const getUserTables = async () => {
-  const response = await axios.get('/api/v1/user-tables')
-  return response.data
+  return get('/api/v1/user-tables')
 } 
