@@ -113,6 +113,7 @@ def init_main_tables():
                 type VARCHAR(50) NOT NULL,
                 config TEXT NOT NULL,
                 data_source TEXT,
+                user_id VARCHAR(36) NULL,
                 analysis_task_id VARCHAR(36),
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
