@@ -2,9 +2,20 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 
+// 根据当前环境确定API基础URL
+const getBaseUrl = () => {
+  const hostname = window.location.hostname;
+  // 如果是在Linux服务器上运行
+  if (hostname === '101.37.118.6') {
+    return 'http://101.37.118.6:8000/api';
+  }
+  // 默认使用相对路径
+  return '/api';
+};
+
 // 创建axios实例
 const service: AxiosInstance = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseUrl(),
   timeout: 30000
 })
 
@@ -12,6 +23,7 @@ const service: AxiosInstance = axios.create({
 service.interceptors.request.use(
   (config) => {
     // 可以在这里添加token等认证信息
+    console.log('发送请求到:', config.url);
     return config
   },
   (error) => {
@@ -80,7 +92,7 @@ service.interceptors.response.use(
       console.error('请求超时或网络错误:', error.request)
       ElMessage.error('请求超时或网络错误，请稍后重试')
     } else {
-      // 请求配置出错
+      // 请求配置错误
       console.error('请求配置错误:', error.message)
       ElMessage.error(`请求错误: ${error.message}`)
     }

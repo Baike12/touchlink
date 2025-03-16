@@ -6,9 +6,13 @@ from dotenv import load_dotenv
 from backend.src.utils.middleware import exception_handler_middleware
 from backend.src.api.v1 import api_router
 from backend.src.config.init_db import init_db
+from backend.src.config.settings import Settings
 
 # 加载环境变量
 load_dotenv()
+
+# 获取设置
+settings = Settings()
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -20,7 +24,7 @@ app = FastAPI(
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 在生产环境中应该设置为特定的前端域名
+    allow_origins=settings.CORS_ORIGINS,  # 从设置中读取允许的源
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,7 +42,8 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    """健康检查接口"""
+    return {"status": "ok"}
 
 # 应用启动事件
 @app.on_event("startup")
