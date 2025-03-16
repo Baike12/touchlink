@@ -13,20 +13,20 @@ export interface TableForm {
 
 // 创建表
 export const createTable = async (tableForm: TableForm) => {
-  return post('/api/v1/user-tables', tableForm)
+  return post('/v1/user-tables', tableForm)
 }
 
 // 添加数据
 export const addTableData = async (tableName: string, data: Record<string, any>) => {
-  return post(`/api/v1/user-tables/${tableName}/data`, data)
+  return post(`/v1/user-tables/${tableName}/data`, data)
 }
 
 // 获取表数据
 export const getTableData = async (tableName: string) => {
-  return get(`/api/v1/user-tables/${tableName}/data`)
+  return get(`/v1/user-tables/${tableName}/data`)
 }
 
 // 获取所有用户表
 export const getUserTables = async () => {
-  return get('/api/v1/user-tables')
+  return get('/v1/user-tables')
 } 

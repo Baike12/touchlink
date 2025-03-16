@@ -7,10 +7,10 @@ const getBaseUrl = () => {
   const hostname = window.location.hostname;
   // 如果是在Linux服务器上运行
   if (hostname === '101.37.118.6') {
-    return 'http://101.37.118.6:8000';
+    return 'http://101.37.118.6:8000/api';
   }
   // 默认使用相对路径
-  return '';
+  return '/api';
 };
 
 // 创建axios实例
