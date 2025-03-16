@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, JSON, DateTime, func
 import uuid
-from src.config.database import Base
+from backend.src.config.database import Base
 
 
 class DataSource(Base):

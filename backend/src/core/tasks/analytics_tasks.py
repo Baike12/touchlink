@@ -7,11 +7,11 @@ from sqlalchemy.orm import Session
 
 from .celery import celery_app
 from .task_logger import get_task_logger
-from src.core.services import AnalyticsService, DataSourceService
-from src.core.analytics import Pipeline
-from src.config.database import SessionLocal
-from src.utils.logger import setup_logger
-from src.utils.exceptions import AnalyticsException, NotFoundException
+from backend.src.core.services import AnalyticsService, DataSourceService
+from backend.src.core.analytics import Pipeline
+from backend.src.config.database import SessionLocal
+from backend.src.utils.logger import setup_logger
+from backend.src.utils.exceptions import AnalyticsException, NotFoundException
 
 # 创建日志记录器
 logger = setup_logger("analytics_tasks")

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Text, DateTime, func
 from sqlalchemy.orm import relationship
 import uuid
-from src.config.database import Base
+from backend.src.config.database import Base
 
 
 class Chart(Base):

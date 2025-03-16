@@ -5,15 +5,15 @@ import pandas as pd
 import json
 import uuid
 
-from src.core.services import VisualizationService
-from src.core.visualization.chart_service import CHART_TYPES
-from src.api.deps import get_db
-from src.utils.exceptions import (
+from backend.src.core.services import VisualizationService
+from backend.src.core.visualization.chart_service import CHART_TYPES
+from backend.src.api.deps import get_db
+from backend.src.utils.exceptions import (
     ResourceNotFoundException,
     ValidationException,
     DatabaseException
 )
-from src.schemas.chart import (
+from backend.src.schemas.chart import (
     ChartCreate,
     ChartUpdate,
     ChartResponse,

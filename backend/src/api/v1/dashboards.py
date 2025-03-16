@@ -2,15 +2,15 @@ from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from src.core.services import DashboardService
-from src.api.deps import get_db, get_current_user
-from src.utils.exceptions import (
+from backend.src.core.services import DashboardService
+from backend.src.api.deps import get_db, get_current_user
+from backend.src.utils.exceptions import (
     ResourceNotFoundException,
     ValidationException,
     DatabaseException
 )
-from src.schemas.user import User
-from src.schemas.dashboard import (
+from backend.src.schemas.user import User
+from backend.src.schemas.dashboard import (
     DashboardCreate,
     DashboardUpdate,
     DashboardResponse,

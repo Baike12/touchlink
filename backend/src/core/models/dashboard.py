@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
-from src.config.database import Base
+from backend.src.config.database import Base
 
 
 class Dashboard(Base):

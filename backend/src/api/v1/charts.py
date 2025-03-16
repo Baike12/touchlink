@@ -3,9 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 import json
 
-from src.api.deps import get_db, get_current_user
-from src.schemas.user import User
-from src.core.schemas.chart import (
+from backend.src.api.deps import get_db, get_current_user
+from backend.src.schemas.user import User
+from backend.src.core.schemas.chart import (
     ChartCreate,
     ChartUpdate,
     ChartResponse,
@@ -13,9 +13,9 @@ from src.core.schemas.chart import (
     ChartOptionsResponse,
     ChartList
 )
-from src.utils.logger import setup_logger
-from src.core.services.visualization_service import VisualizationService
-from src.utils.exceptions import (
+from backend.src.utils.logger import setup_logger
+from backend.src.core.services.visualization_service import VisualizationService
+from backend.src.utils.exceptions import (
     ResourceNotFoundException,
     ValidationException,
     DatabaseException
@@ -38,7 +38,7 @@ def get_charts(
     """
     获取图表列表
     """
-    from src.core.services import VisualizationService
+    from backend.src.core.services import VisualizationService
     
     try:
         visualization_service = VisualizationService(db)
@@ -347,8 +347,8 @@ def get_chart(
     """
     获取图表
     """
-    from src.core.services import VisualizationService
-    from src.utils.exceptions import ResourceNotFoundException
+    from backend.src.core.services import VisualizationService
+    from backend.src.utils.exceptions import ResourceNotFoundException
     
     try:
         visualization_service = VisualizationService(db)

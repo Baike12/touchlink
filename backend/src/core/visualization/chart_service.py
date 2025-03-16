@@ -5,7 +5,7 @@ import os
 import uuid
 from datetime import datetime
 
-from src.utils.logger import setup_logger
+from backend.src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("chart_service")

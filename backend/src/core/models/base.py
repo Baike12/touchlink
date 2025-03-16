@@ -1,1 +1,1 @@
-from src.config.database import Base 
+from backend.src.config.database import Base 

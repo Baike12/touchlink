@@ -3,10 +3,10 @@ import json
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.core.models import Dashboard, DashboardItem, Chart, User
-from src.core.services import VisualizationService
-from src.utils.logger import setup_logger
-from src.utils.exceptions import (
+from backend.src.core.models import Dashboard, DashboardItem, Chart, User
+from backend.src.core.services import VisualizationService
+from backend.src.utils.logger import setup_logger
+from backend.src.utils.exceptions import (
     ResourceNotFoundException,
     ValidationException,
     DatabaseException

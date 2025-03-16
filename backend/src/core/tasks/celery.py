@@ -1,6 +1,6 @@
 from celery import Celery
-from src.config.settings import settings
-from src.utils.logger import setup_logger
+from backend.src.config.settings import settings
+from backend.src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("celery_app")

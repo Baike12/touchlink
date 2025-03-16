@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
 from dotenv import load_dotenv
-from src.utils.middleware import exception_handler_middleware
-from src.api.v1 import api_router
-from src.config.init_db import init_db
+from backend.src.utils.middleware import exception_handler_middleware
+from backend.src.api.v1 import api_router
+from backend.src.config.init_db import init_db
 
 # 加载环境变量
 load_dotenv()
@@ -48,7 +48,7 @@ async def startup_event():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "backend.src.main:app",
         host="0.0.0.0",
         port=int(os.getenv("PORT", "8000")),
         reload=True
