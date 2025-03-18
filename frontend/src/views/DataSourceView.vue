@@ -274,7 +274,7 @@ const formData = ref({
   host: '127.0.0.1',
   port: 3306,
   user: 'root',
-  password: 'db1x@NJ+1',
+  password: 'your_password_here',
   database: 'shop'
 })
 
