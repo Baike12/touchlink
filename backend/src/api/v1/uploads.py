@@ -6,8 +6,8 @@ import uuid
 import shutil
 from datetime import datetime
 
-from backend.src.config.settings import settings
-from backend.src.utils.logger import setup_logger
+from src.config.settings import settings
+from src.utils.logger import setup_logger
 
 # 创建路由
 router = APIRouter(prefix="/uploads", tags=["文件上传"])

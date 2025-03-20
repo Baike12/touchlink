@@ -3,38 +3,33 @@ import os
 import re
 
 def fix_imports(directory):
-    """修复目录中所有Python文件的导入路径"""
-    for root, dirs, files in os.walk(directory):
+    """
+    修复指定目录下所有Python文件中的导入语句
+    将 'from backend.src' 替换为 'from src'
+    """
+    for root, _, files in os.walk(directory):
         for file in files:
             if file.endswith('.py'):
                 file_path = os.path.join(root, file)
-                fix_file_imports(file_path)
+                
+                # 读取文件内容
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # 替换导入语句
+                new_content = re.sub(
+                    r'from backend\.src\.', 
+                    'from src.',
+                    content
+                )
+                
+                # 如果内容有变化，写回文件
+                if new_content != content:
+                    print(f"Fixing imports in {file_path}")
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        f.write(new_content)
 
-def fix_file_imports(file_path):
-    """修复单个文件的导入路径"""
-    with open(file_path, 'r') as f:
-        content = f.read()
-    
-    # 定义需要修复的导入模式
-    patterns = [
-        (r'from (api|config|core|schemas|utils)\.', r'from src.\1.'),
-        (r'import (api|config|core|schemas|utils)\.', r'import src.\1.'),
-    ]
-    
-    # 应用修复
-    modified = False
-    for pattern, replacement in patterns:
-        if re.search(pattern, content):
-            content = re.sub(pattern, replacement, content)
-            modified = True
-    
-    # 如果文件被修改，则写回
-    if modified:
-        print(f"修复文件: {file_path}")
-        with open(file_path, 'w') as f:
-            f.write(content)
-
-if __name__ == "__main__":
-    src_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
-    fix_imports(src_dir)
+if __name__ == '__main__':
+    # 修复src目录下的所有Python文件
+    fix_imports('src')
     print("导入路径修复完成!") 

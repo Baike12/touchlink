@@ -1,19 +1,52 @@
 import os
 from dotenv import load_dotenv
 import urllib.parse
+import sys
+
+# 获取当前文件所在目录的路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 获取项目根目录的路径（backend目录）
+root_dir = os.path.dirname(os.path.dirname(current_dir))
+# 构建.env文件的完整路径
+env_path = os.path.join(root_dir, '.env')
 
 # 加载环境变量
-load_dotenv()
+if not load_dotenv(env_path):
+    print(f"错误：无法加载环境变量文件 {env_path}")
+    sys.exit(1)
+
+# 检查必要的环境变量
+required_env_vars = {
+    "DB_HOST": os.getenv("DB_HOST"),
+    "DB_PORT": os.getenv("DB_PORT"),
+    "DB_USER": os.getenv("DB_USER"),
+    "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+    "DB_NAME": os.getenv("DB_NAME")
+}
+
+missing_vars = [var for var, value in required_env_vars.items() if value is None]
+if missing_vars:
+    print(f"错误：缺少必要的环境变量: {', '.join(missing_vars)}")
+    sys.exit(1)
+
+# 打印环境变量加载情况
+print("数据库配置信息：")
+print(f"DB_HOST: {os.getenv('DB_HOST')}")
+print(f"DB_PORT: {os.getenv('DB_PORT')}")
+print(f"DB_USER: {os.getenv('DB_USER')}")
+print(f"DB_PASSWORD: {'*' * len(os.getenv('DB_PASSWORD'))}")  # 隐藏实际密码
+print(f"DB_NAME: {os.getenv('DB_NAME')}")
+print(f"环境变量文件路径: {env_path}")
 
 # 应用设置
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # 数据库设置
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", "3306"))
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "touchlink")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = int(os.getenv("DB_PORT"))
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_NAME = os.getenv("DB_NAME")
 USER_DB_NAME = os.getenv("USER_DB_NAME", "user_database")
 
 # Redis设置

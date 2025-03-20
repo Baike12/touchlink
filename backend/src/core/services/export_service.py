@@ -5,8 +5,8 @@ import uuid
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from backend.src.utils.exceptions import NotFoundException, DataSourceException
-from backend.src.utils.logger import setup_logger
+from src.utils.exceptions import NotFoundException, DataSourceException
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("export_service")

@@ -2,8 +2,8 @@ from typing import Dict, Any, List, Optional
 import pandas as pd
 import numpy as np
 from .base import Operator, OperatorFactory
-from backend.src.utils.exceptions import AnalyticsException
-from backend.src.utils.logger import setup_logger
+from src.utils.exceptions import AnalyticsException
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("filter_operator")

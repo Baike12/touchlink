@@ -3,10 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import os
 from dotenv import load_dotenv
-from backend.src.utils.middleware import exception_handler_middleware
-from backend.src.api.v1 import api_router
-from backend.src.config.init_db import init_db
-from backend.src.config.settings import Settings
+from src.utils.middleware import exception_handler_middleware
+from src.config.settings import CORS_ORIGINS, UPLOAD_DIR
+from src.api.v1 import api_router
+from src.config.init_db import init_db
+from src.config.settings import Settings
 
 # 加载环境变量
 load_dotenv()
@@ -17,14 +18,14 @@ settings = Settings()
 # 创建FastAPI应用
 app = FastAPI(
     title="TouchLink API",
-    description="TouchLink数据分析平台API",
-    version="0.1.0"
+    description="TouchLink后端API服务",
+    version="1.0.0"
 )
 
-# 配置CORS
+# 添加CORS中间件
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有源，简化开发
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,8 +34,11 @@ app.add_middleware(
 # 添加异常处理中间件
 app.middleware("http")(exception_handler_middleware)
 
-# 注册API路由
-app.include_router(api_router)
+# 注册路由
+app.include_router(api_router, prefix="/api")
+
+# 确保上传目录存在
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.get("/")
 async def root():
@@ -53,8 +57,8 @@ async def startup_event():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "backend.src.main:app",
+        "main:app",
         host="0.0.0.0",
-        port=int(os.getenv("PORT", "8000")),
+        port=8000,
         reload=True
     ) 

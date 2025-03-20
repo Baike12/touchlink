@@ -5,10 +5,10 @@ import uuid
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.src.core.models import Chart, User, AnalysisTask
-from backend.src.core.visualization.chart_service import ChartService
-from backend.src.utils.logger import setup_logger
-from backend.src.utils.exceptions import (
+from src.core.models import Chart, User, AnalysisTask
+from src.core.visualization.chart_service import ChartService
+from src.utils.logger import setup_logger
+from src.utils.exceptions import (
     ResourceNotFoundException,
     ValidationException,
     DatabaseException
@@ -539,5 +539,5 @@ class VisualizationService:
         Returns:
             List[str]: 图表类型列表
         """
-        from backend.src.core.visualization.chart_service import CHART_TYPES
+        from src.core.visualization.chart_service import CHART_TYPES
         return CHART_TYPES 

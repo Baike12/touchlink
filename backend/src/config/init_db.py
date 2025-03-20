@@ -4,10 +4,10 @@ import os
 import sqlalchemy as sa
 import urllib.parse
 
-from backend.src.core.models import Base, User
-from backend.src.config.database import engine, get_db
-from backend.src.config.settings import settings
-from backend.src.utils.logger import setup_logger
+from src.core.models import Base, User
+from src.config.database import engine, get_db
+from src.config.settings import settings
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("init_db")

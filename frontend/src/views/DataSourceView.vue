@@ -19,7 +19,7 @@
             class="datasource-form"
           >
             <el-form-item label="数据源类型" prop="type">
-              <el-select v-model="formData.type" placeholder="请选择数据源类型" style="width: 100%">
+              <el-select v-model="formData.type" placeholder="请选择数据源类型" style="width: 100%" @change="handleTypeChange">
                 <el-option
                   v-for="type in supportedTypes"
                   :key="type"
@@ -33,34 +33,59 @@
               <el-input v-model="formData.name" placeholder="请输入数据源名称" />
             </el-form-item>
             
-            <el-form-item label="主机地址" prop="host">
-              <el-input v-model="formData.host" placeholder="请输入主机地址" />
-            </el-form-item>
+            <!-- Excel文件上传 -->
+            <template v-if="formData.type === 'Excel'">
+              <el-form-item label="Excel文件" prop="file">
+                <el-upload
+                  class="excel-uploader"
+                  :auto-upload="false"
+                  :show-file-list="true"
+                  :limit="1"
+                  :on-change="handleFileChange"
+                  :on-exceed="handleExceed"
+                  accept=".xls,.xlsx,.xlsm"
+                >
+                  <el-button type="primary">选择Excel文件</el-button>
+                  <template #tip>
+                    <div class="el-upload__tip">
+                      只能上传 xls/xlsx/xlsm 文件
+                    </div>
+                  </template>
+                </el-upload>
+              </el-form-item>
+            </template>
             
-            <el-form-item label="端口" prop="port">
-              <el-input-number v-model="formData.port" :min="1" :max="65535" style="width: 100%" />
-            </el-form-item>
-            
-            <el-form-item label="用户名" prop="user">
-              <el-input v-model="formData.user" placeholder="请输入用户名" />
-            </el-form-item>
-            
-            <el-form-item label="密码" prop="password">
-              <el-input v-model="formData.password" type="password" placeholder="请输入密码" show-password />
-            </el-form-item>
-            
-            <el-form-item label="数据库" prop="database">
-              <el-input v-model="formData.database" placeholder="请输入数据库名称" />
-            </el-form-item>
+            <!-- MySQL配置 -->
+            <template v-if="formData.type === 'MySQL'">
+              <el-form-item label="主机地址" prop="host">
+                <el-input v-model="formData.host" placeholder="请输入主机地址" />
+              </el-form-item>
+              
+              <el-form-item label="端口" prop="port">
+                <el-input-number v-model="formData.port" :min="1" :max="65535" style="width: 100%" />
+              </el-form-item>
+              
+              <el-form-item label="用户名" prop="user">
+                <el-input v-model="formData.user" placeholder="请输入用户名" />
+              </el-form-item>
+              
+              <el-form-item label="密码" prop="password">
+                <el-input v-model="formData.password" type="password" placeholder="请输入密码" show-password />
+              </el-form-item>
+              
+              <el-form-item label="数据库" prop="database">
+                <el-input v-model="formData.database" placeholder="请输入数据库名称" />
+              </el-form-item>
+            </template>
             
             <el-form-item>
-              <el-button type="primary" @click="testConnection" :loading="loading">
-                测试连接
+              <el-button type="primary" @click="handleSubmit" :loading="loading">
+                {{ formData.type === 'Excel' ? '上传并导入' : '测试连接' }}
               </el-button>
-              <el-button type="success" @click="previewData" :loading="loading">
+              <el-button type="success" @click="previewData" :loading="loading" v-if="formData.type !== 'Excel'">
                 预览数据
               </el-button>
-              <el-button type="info" @click="saveDataSource" :loading="loading">
+              <el-button type="info" @click="saveDataSource" :loading="loading" v-if="formData.type !== 'Excel'">
                 保存数据源
               </el-button>
             </el-form-item>
@@ -234,8 +259,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import type { FormInstance } from 'element-plus'
-import { ElMessage, ElNotification, ElMessageBox } from 'element-plus'
+import type { FormInstance, UploadFile } from 'element-plus'
+import { ElMessage, ElNotification, ElMessageBox, ElLoading } from 'element-plus'
 import { 
   getTables, 
   getTableSchema,
@@ -245,6 +270,7 @@ import {
   saveDataSource as apiSaveDataSource,
   getDataSources,
   deleteDataSource as apiDeleteDataSource,
+  uploadExcelFile,
   type TableSchemaResponse,
   type TableDataResponse,
   type DataSourceConfig,
@@ -275,7 +301,8 @@ const formData = ref({
   port: 3306,
   user: 'root',
   password: 'your_password_here',
-  database: 'shop'
+  database: 'shop',
+  file: null as File | null
 })
 
 // 表单验证规则
@@ -286,7 +313,8 @@ const formRules = {
   port: [{ required: true, message: '请输入端口', trigger: 'blur' }],
   user: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  database: [{ required: true, message: '请输入数据库名称', trigger: 'blur' }]
+  database: [{ required: true, message: '请输入数据库名称', trigger: 'blur' }],
+  file: [{ required: true, message: '请选择Excel文件', trigger: 'change' }]
 }
 
 // 表格相关数据
@@ -303,6 +331,77 @@ const pageSize = ref(100)
 // 已保存的数据源
 const savedDataSources = ref<DataSourceDetail[]>([])
 const loadingSavedDataSources = ref(false)
+
+// 处理数据源类型变更
+const handleTypeChange = (type: string) => {
+  // 重置表单数据
+  formData.value = {
+    type,
+    name: '',
+    host: '127.0.0.1',
+    port: 3306,
+    user: 'root',
+    password: 'your_password_here',
+    database: 'shop',
+    file: null
+  }
+}
+
+// 处理文件选择
+const handleFileChange = (uploadFile: UploadFile) => {
+  formData.value.file = uploadFile.raw || null
+  formData.value.name = uploadFile.name.split('.')[0] // 使用文件名作为数据源名称
+}
+
+// 处理超出文件数限制
+const handleExceed = () => {
+  ElMessage.warning('只能上传一个文件')
+}
+
+// 处理提交
+const handleSubmit = async () => {
+  if (!formRef.value) return
+  
+  await formRef.value.validate(async (valid) => {
+    if (valid) {
+      loading.value = true
+      
+      try {
+        if (formData.value.type === 'Excel') {
+          // 上传Excel文件
+          if (!formData.value.file) {
+            ElMessage.error('请选择Excel文件')
+            return
+          }
+          
+          const response = await uploadExcelFile(formData.value.file)
+          
+          ElNotification({
+            title: '上传成功',
+            message: response.message,
+            type: 'success'
+          })
+          
+          // 重置表单
+          formRef.value.resetFields()
+          
+        } else {
+          // 测试数据源连接
+          await testConnection()
+        }
+      } catch (error: any) {
+        console.error('操作失败:', error)
+        ElNotification({
+          title: '操作失败',
+          message: error.message || '操作失败',
+          type: 'error'
+        })
+      } finally {
+        loading.value = false
+      }
+    }
+  })
+}
 
 // 测试数据源连接
 const testConnection = async () => {
@@ -764,5 +863,26 @@ onMounted(() => {
   font-size: 16px;
   font-weight: bold;
   color: #409EFF;
+}
+
+.excel-uploader {
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+
+.excel-uploader:hover {
+  border-color: #409EFF;
+}
+
+.el-upload__tip {
+  font-size: 12px;
+  color: #606266;
+  margin-top: 7px;
 }
 </style> 

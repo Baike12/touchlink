@@ -3,11 +3,11 @@ import pandas as pd
 import uuid
 from sqlalchemy.orm import Session
 
-from backend.src.core.analytics import Pipeline, OperatorFactory
-from backend.src.core.services import DataSourceService
-from backend.src.core.models import AnalysisTask
-from backend.src.utils.exceptions import AnalyticsException, NotFoundException
-from backend.src.utils.logger import setup_logger
+from src.core.analytics import Pipeline, OperatorFactory
+from src.core.services import DataSourceService
+from src.core.models import AnalysisTask
+from src.utils.exceptions import AnalyticsException, NotFoundException
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("analytics_service")

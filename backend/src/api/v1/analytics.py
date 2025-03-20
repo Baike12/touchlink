@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 
-from backend.src.core.services import AnalyticsService
-from backend.src.core.analytics import Pipeline, OperatorFactory
-from backend.src.core.tasks import execute_analysis_task
-from backend.src.core.tasks.task_logger import get_task_logger
-from backend.src.utils.exceptions import AnalyticsException, NotFoundException
-from backend.src.config.database import get_db
-from backend.src.utils.logger import setup_logger
+from src.core.services import AnalyticsService
+from src.core.analytics import Pipeline, OperatorFactory
+from src.core.tasks import execute_analysis_task
+from src.core.tasks.task_logger import get_task_logger
+from src.utils.exceptions import AnalyticsException, NotFoundException
+from src.config.database import get_db
+from src.utils.logger import setup_logger
 
 # 创建路由
 router = APIRouter(prefix="/analytics", tags=["分析"])
@@ -357,7 +357,7 @@ async def cancel_task(
         AnalyticsService.update_task(db, task_id, status="canceled")
         
         # 异步取消任务
-        from backend.src.core.tasks import cancel_analysis_task
+        from src.core.tasks import cancel_analysis_task
         cancel_analysis_task.delay(task_id)
         
         return TaskStatusResponse(

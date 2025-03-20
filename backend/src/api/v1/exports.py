@@ -5,12 +5,12 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 import os
 
-from backend.src.core.services import ExportService
-from backend.src.core.models import ExportTask
-from backend.src.core.tasks.export_tasks import execute_export_task
-from backend.src.utils.exceptions import NotFoundException
-from backend.src.config.database import get_db
-from backend.src.utils.logger import setup_logger
+from src.core.services import ExportService
+from src.core.models import ExportTask
+from src.core.tasks.export_tasks import execute_export_task
+from src.utils.exceptions import NotFoundException
+from src.config.database import get_db
+from src.utils.logger import setup_logger
 
 # 创建路由
 router = APIRouter(prefix="/exports", tags=["导出"])

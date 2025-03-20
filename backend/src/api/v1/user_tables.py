@@ -6,9 +6,9 @@ import sqlalchemy as sa
 from sqlalchemy.exc import SQLAlchemyError
 import urllib.parse
 
-from backend.src.api.deps import get_db
-from backend.src.config.settings import settings
-from backend.src.utils.logger import setup_logger
+from src.api.deps import get_db
+from src.config.settings import settings
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("user_tables")

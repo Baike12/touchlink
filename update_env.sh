@@ -46,7 +46,7 @@ SECRET_KEY=781nC1ZkBS1SXR2Xd6_BS9j-q1p6DyuN_-PU825Q9TQ=
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
 # CORS配置
-CORS_ORIGINS=["http://localhost:5173", "http://localhost:3000", "http://101.37.118.6:3000", "http://101.37.118.6", "http://101.37.118.6:8000"]
+CORS_ORIGINS=["http://localhost:5173", "http://localhost:8000", "http://101.37.118.6", "http://101.37.118.6:8000"]
 
 # 文件存储配置
 UPLOAD_DIR=./uploads

@@ -24,4 +24,8 @@ def get_db():
     try:
         yield db
     finally:
-        db.close() 
+        db.close()
+
+def get_user_database_url():
+    """获取用户数据库URL，用于存储导入的Excel数据"""
+    return get_database_url() 

@@ -5,9 +5,9 @@ import os
 from pydantic import BaseModel, Field
 import json
 
-from backend.src.core.models import AnalyticsTemplate
-from backend.src.config.database import get_db
-from backend.src.utils.logger import setup_logger
+from src.core.models import AnalyticsTemplate
+from src.config.database import get_db
+from src.utils.logger import setup_logger
 
 # 创建路由
 router = APIRouter(prefix="/analytics-templates", tags=["分析模板"])

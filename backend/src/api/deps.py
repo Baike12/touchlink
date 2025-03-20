@@ -2,8 +2,8 @@ from typing import Generator, Optional
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from backend.src.config.database import get_db
-from backend.src.schemas.user import User
+from src.config.database import get_db
+from src.schemas.user import User
 
 # 简化的获取当前用户函数
 async def get_current_user():

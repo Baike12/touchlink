@@ -7,6 +7,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 // 恢复DataSourceView导入
 import DataSourceView from '../views/DataSourceView.vue'
+import ImportExcelView from '../views/ImportExcelView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -24,6 +25,14 @@ const routes: Array<RouteRecordRaw> = [
     component: DataSourceView,
     meta: {
       title: '数据源管理'
+    }
+  },
+  {
+    path: '/import-excel',
+    name: 'import-excel',
+    component: ImportExcelView,
+    meta: {
+      title: '从Excel导入'
     }
   },
   {

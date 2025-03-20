@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Text, DateTime, func
 import uuid
 import json
-from backend.src.config.database import Base
+from src.config.database import Base
 
 
 class AnalyticsTemplate(Base):

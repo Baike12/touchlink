@@ -67,6 +67,7 @@ def init_main_tables():
             conn.execute(sa.text("""
             CREATE TABLE IF NOT EXISTS data_sources (
                 id VARCHAR(36) PRIMARY KEY,
+                user_id VARCHAR(36) DEFAULT '00000000-0000-0000-0000-000000000000',
                 name VARCHAR(100) NOT NULL,
                 type VARCHAR(20) NOT NULL,
                 config JSON NOT NULL,

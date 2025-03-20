@@ -57,30 +57,30 @@ export interface TableDataResponse {
 
 // 获取支持的数据源类型
 export function getDataSourceTypes() {
-  return get<string[]>('/v1/datasources/types')
+  return get<string[]>('/datasources/types')
 }
 
 // 测试数据源连接
 export function testDataSourceConnection(config: DataSourceConfig) {
-  return post<DataSourceResponse>('/v1/datasources/test', config)
+  return post<DataSourceResponse>('/datasources/test', config)
 }
 
 // 连接数据源
 export function connectDataSource(config: DataSourceConfig) {
-  return post<DataSourceResponse>('/v1/datasources/connect', config)
+  return post<DataSourceResponse>('/datasources/connect', config)
 }
 
 // 保存数据源
 export function saveDataSource(request: DataSourceCreateRequest) {
-  return post<DataSourceDetail>('/v1/datasources', request)
+  return post<DataSourceDetail>('/datasources', request)
 }
 
 // 获取表列表
 export function getTables(datasourceId?: string) {
   // 如果没有数据源ID，则使用当前会话中的临时连接
   const url = datasourceId 
-    ? `/v1/datasources/${datasourceId}/tables` 
-    : `/v1/datasources/session/tables`;
+    ? `/datasources/${datasourceId}/tables` 
+    : `/datasources/session/tables`;
   console.log('请求表列表URL:', url);
   return get<TableListResponse>(url);
 }
@@ -89,8 +89,8 @@ export function getTables(datasourceId?: string) {
 export function getTableSchema(tableName: string, datasourceId?: string) {
   // 如果没有数据源ID，则使用当前会话中的临时连接
   const url = datasourceId
-    ? `/v1/datasources/${datasourceId}/tables/${tableName}/schema`
-    : `/v1/datasources/tables/${tableName}/schema`;
+    ? `/datasources/${datasourceId}/tables/${tableName}/schema`
+    : `/datasources/tables/${tableName}/schema`;
   return get<TableSchemaResponse>(url);
 }
 
@@ -98,22 +98,38 @@ export function getTableSchema(tableName: string, datasourceId?: string) {
 export function getTableData(tableName: string, limit: number = 100, datasourceId?: string) {
   // 如果没有数据源ID，则使用当前会话中的临时连接
   const url = datasourceId
-    ? `/v1/datasources/${datasourceId}/tables/${tableName}/data`
-    : `/v1/datasources/tables/${tableName}/data`;
+    ? `/datasources/${datasourceId}/tables/${tableName}/data`
+    : `/datasources/tables/${tableName}/data`;
   return get<TableDataResponse>(`${url}?limit=${limit}`);
 }
 
 // 获取所有数据源
 export function getDataSources() {
-  return get<DataSourceDetail[]>('/v1/datasources')
+  return get<DataSourceDetail[]>('/datasources')
 }
 
 // 获取数据源详情
 export function getDataSourceDetail(id: string) {
-  return get<DataSourceDetail>(`/v1/datasources/${id}`)
+  return get<DataSourceDetail>(`/datasources/${id}`)
 }
 
 // 删除数据源
 export function deleteDataSource(id: string) {
-  return del(`/v1/datasources/${id}`)
+  return del(`/datasources/${id}`)
+}
+
+// 上传Excel文件
+export function uploadExcelFile(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return post<{
+    file_path: string
+    table_name: string
+    original_filename: string
+    message: string
+  }>('/upload/excel', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
 } 

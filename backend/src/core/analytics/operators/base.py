@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 import pandas as pd
-from backend.src.utils.logger import setup_logger
+from src.utils.logger import setup_logger
 
 # 创建日志记录器
 logger = setup_logger("analytics_operators")

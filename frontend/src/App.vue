@@ -21,10 +21,20 @@
             <span class="menu-icon">📝</span>
             <span>添加数据</span>
           </el-menu-item>
-          <el-menu-item index="/datasources">
-            <span class="menu-icon">💾</span>
-            <span>数据源</span>
-          </el-menu-item>
+          <el-sub-menu index="/datasources">
+            <template #title>
+              <span class="menu-icon">💾</span>
+              <span>数据源</span>
+            </template>
+            <el-menu-item index="/datasources">
+              <span class="menu-icon">📋</span>
+              <span>数据源列表</span>
+            </el-menu-item>
+            <el-menu-item index="/import-excel">
+              <span class="menu-icon">📥</span>
+              <span>Excel导入</span>
+            </el-menu-item>
+          </el-sub-menu>
           <el-menu-item index="/analytics">
             <span class="menu-icon">📊</span>
             <span>分析</span>

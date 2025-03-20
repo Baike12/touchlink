@@ -171,13 +171,13 @@ start_frontend() {
     sleep 5
     
     # 检查前端是否成功启动
-    if curl -s "http://localhost:3000/" > /dev/null; then
+    if curl -s "http://localhost:8000/" > /dev/null; then
         echo -e "${GREEN}前端服务已成功启动${NC}"
         return 0
     else
         echo -e "${YELLOW}前端服务可能需要更长时间启动，继续等待...${NC}"
         sleep 5
-        if curl -s "http://localhost:3000/" > /dev/null; then
+        if curl -s "http://localhost:8000/" > /dev/null; then
             echo -e "${GREEN}前端服务已成功启动（延迟）${NC}"
             return 0
         else
@@ -194,19 +194,19 @@ open_browser() {
     # 检查操作系统类型
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS
-        open "http://localhost:3000/"
+        open "http://localhost:8000/"
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         # Linux
         if command -v xdg-open &> /dev/null; then
-            xdg-open "http://localhost:3000/"
+            xdg-open "http://localhost:8000/"
         elif command -v gnome-open &> /dev/null; then
-            gnome-open "http://localhost:3000/"
+            gnome-open "http://localhost:8000/"
         else
-            echo -e "${YELLOW}无法自动打开浏览器，请手动访问 http://localhost:3000/${NC}"
+            echo -e "${YELLOW}无法自动打开浏览器，请手动访问 http://localhost:8000/${NC}"
         fi
     else
         echo -e "${YELLOW}不支持的操作系统，无法自动打开浏览器${NC}"
-        echo -e "${YELLOW}请手动访问 http://localhost:3000/${NC}"
+        echo -e "${YELLOW}请手动访问 http://localhost:8000/${NC}"
     fi
 }
 
@@ -335,7 +335,7 @@ main() {
             
             echo -e "${GREEN}所有服务已启动！${NC}"
             echo -e "${GREEN}后端地址: http://localhost:8000${NC}"
-            echo -e "${GREEN}前端地址: http://localhost:3000${NC}"
+            echo -e "${GREEN}前端地址: http://localhost:8000${NC}"
             echo -e "${YELLOW}使用 '$0 logs' 查看日志${NC}"
             echo -e "${YELLOW}使用 '$0 stop' 停止所有服务${NC}"
             ;;

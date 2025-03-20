@@ -3,8 +3,8 @@ from sqlalchemy import create_engine, inspect, text
 from typing import Dict, Any, List, Optional
 import pymysql
 from .base import DataSource, DataSourceFactory
-from backend.src.utils.exceptions import DataSourceException
-from backend.src.utils.logger import setup_logger
+from src.utils.exceptions import DataSourceException
+from src.utils.logger import setup_logger
 import urllib.parse
 
 # 创建日志记录器
