@@ -1,10 +1,13 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, UploadFile, File, HTTPException, status, Depends
 from typing import Dict, Any
 import os
 import uuid
+from sqlalchemy.orm import Session
 from src.utils.logger import setup_logger
 from src.core.data_sources import DataSourceFactory
 from src.config.settings import UPLOAD_DIR
+from src.api.deps import get_db
+from src.core.services.datasource_service import DataSourceService
 
 # 创建路由
 router = APIRouter(prefix="/upload", tags=["文件上传"])
@@ -16,12 +19,13 @@ logger = setup_logger("upload_api")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/excel", response_model=Dict[str, Any])
-async def upload_excel_file(file: UploadFile = File(...)):
+async def upload_excel_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """
     上传Excel文件并导入到MySQL数据库
     
     Args:
         file: 上传的Excel文件
+        db: 数据库会话
         
     Returns:
         Dict[str, Any]: 上传结果，包含文件路径和表名
@@ -69,6 +73,19 @@ async def upload_excel_file(file: UploadFile = File(...)):
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="导入Excel数据失败"
             )
+        
+        # 创建数据源记录
+        try:
+            datasource = DataSourceService.create_datasource(
+                db=db,
+                name=table_name,
+                type="excel",
+                config=config
+            )
+            logger.info(f"创建Excel数据源记录成功: {datasource.id}")
+        except Exception as e:
+            logger.error(f"创建Excel数据源记录失败: {str(e)}")
+            # 不影响主流程，继续返回成功
         
         logger.info(f"Excel文件 {file.filename} 已成功上传并导入到MySQL表 {table_name}")
         

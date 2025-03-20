@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from .settings import get_database_url
+from .settings import get_database_url, get_user_database_url as settings_get_user_database_url
 
 # 创建数据库引擎
 engine = create_engine(
@@ -28,4 +28,4 @@ def get_db():
 
 def get_user_database_url():
     """获取用户数据库URL，用于存储导入的Excel数据"""
-    return get_database_url() 
+    return settings_get_user_database_url() 

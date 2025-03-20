@@ -144,4 +144,93 @@ class ExcelDataSource(DataSource):
             return pd.DataFrame()
         
         query = f"SELECT * FROM {table_name} LIMIT {limit}"
-        return pd.read_sql(query, self.engine) 
+        return pd.read_sql(query, self.engine)
+    
+    def fetch_data(self, query: Dict[str, Any]) -> pd.DataFrame:
+        """
+        从Excel数据源获取数据
+        
+        Args:
+            query: 查询参数，包含table_name和filters等
+            
+        Returns:
+            pd.DataFrame: 查询结果数据
+        """
+        if not self.engine:
+            logger.error("未连接到数据源")
+            return pd.DataFrame()
+        
+        try:
+            # 如果提供了SQL语句，直接执行
+            if "sql" in query:
+                sql = query["sql"]
+                logger.debug(f"执行SQL查询: {sql}")
+                return pd.read_sql(sql, self.engine)
+            
+            # 如果提供了表名，从对应的MySQL表中查询数据
+            elif "table_name" in query:
+                table_name = query["table_name"]
+                
+                # 构建SELECT子句
+                if "columns" in query and query["columns"]:
+                    columns = ", ".join(query["columns"])
+                else:
+                    columns = "*"
+                
+                # 构建WHERE子句
+                where_clause = ""
+                if "filters" in query and query["filters"]:
+                    conditions = []
+                    for filter_item in query["filters"]:
+                        if len(filter_item) == 3:
+                            field, operator, value = filter_item
+                            
+                            # 处理不同类型的值
+                            if isinstance(value, str):
+                                value = f"'{value}'"
+                            elif value is None:
+                                value = "NULL"
+                            else:
+                                value = str(value)
+                            
+                            conditions.append(f"{field} {operator} {value}")
+                    
+                    if conditions:
+                        where_clause = "WHERE " + " AND ".join(conditions)
+                
+                # 构建ORDER BY子句
+                order_clause = ""
+                if "order_by" in query and query["order_by"]:
+                    order_items = []
+                    for order_item in query["order_by"]:
+                        if isinstance(order_item, tuple) and len(order_item) == 2:
+                            field, direction = order_item
+                            order_items.append(f"{field} {direction}")
+                        else:
+                            order_items.append(f"{order_item}")
+                    
+                    if order_items:
+                        order_clause = "ORDER BY " + ", ".join(order_items)
+                
+                # 构建LIMIT子句
+                limit_clause = ""
+                if "limit" in query:
+                    limit_clause = f"LIMIT {query['limit']}"
+                    
+                    if "offset" in query:
+                        limit_clause += f" OFFSET {query['offset']}"
+                
+                # 组合SQL语句
+                sql = f"SELECT {columns} FROM {table_name} {where_clause} {order_clause} {limit_clause}"
+                sql = " ".join(sql.split())  # 移除多余空格
+                
+                logger.debug(f"执行SQL查询: {sql}")
+                return pd.read_sql(sql, self.engine)
+            
+            else:
+                logger.error("查询参数必须包含sql或table_name")
+                return pd.DataFrame()
+                
+        except Exception as e:
+            logger.error(f"执行查询失败: {str(e)}")
+            return pd.DataFrame() 
