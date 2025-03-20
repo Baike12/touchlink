@@ -52,6 +52,10 @@ class DataSourceService:
         Returns:
             DataSource: 创建的数据源
         """
+        # 确保类型是小写的
+        type = type.lower()
+        config['type'] = type
+        
         # 加密配置信息
         encrypted_config = DataSourceService._encrypt_config(config)
         

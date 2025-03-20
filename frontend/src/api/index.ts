@@ -7,7 +7,7 @@ const getBaseUrl = () => {
   const hostname = window.location.hostname;
   // 如果是在Linux服务器上运行
   if (hostname === '101.37.118.6') {
-    return 'http://101.37.118.6:8000/api/v1';
+    return '/api/v1';  // 通过前端代理访问后端
   }
   // 默认使用相对路径
   return '/api/v1';

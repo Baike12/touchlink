@@ -107,7 +107,7 @@ case "$1" in
     ;;
   "check")
     echo "检查API路由..."
-    run_ssh_command "cd $PROJECT_DIR && curl -v http://localhost:8000/api/v1/user-tables"
+    run_ssh_command "cd $PROJECT_DIR && curl -v http://localhost:3000/api/v1/user-tables"
     ;;
   "all")
     echo "执行所有操作（拉取、服务器构建、重启）..."

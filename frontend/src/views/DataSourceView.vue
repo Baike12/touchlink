@@ -22,9 +22,9 @@
               <el-select v-model="formData.type" placeholder="请选择数据源类型" style="width: 100%" @change="handleTypeChange">
                 <el-option
                   v-for="type in supportedTypes"
-                  :key="type"
-                  :label="type"
-                  :value="type"
+                  :key="type.value"
+                  :label="type.label"
+                  :value="type.value"
                 />
               </el-select>
             </el-form-item>
@@ -34,7 +34,7 @@
             </el-form-item>
             
             <!-- Excel文件上传 -->
-            <template v-if="formData.type === 'Excel'">
+            <template v-if="formData.type === 'excel'">
               <el-form-item label="Excel文件" prop="file">
                 <el-upload
                   class="excel-uploader"
@@ -56,7 +56,7 @@
             </template>
             
             <!-- MySQL配置 -->
-            <template v-if="formData.type === 'MySQL'">
+            <template v-if="formData.type === 'mysql'">
               <el-form-item label="主机地址" prop="host">
                 <el-input v-model="formData.host" placeholder="请输入主机地址" />
               </el-form-item>
@@ -80,12 +80,12 @@
             
             <el-form-item>
               <el-button type="primary" @click="handleSubmit" :loading="loading">
-                {{ formData.type === 'Excel' ? '上传并导入' : '测试连接' }}
+                {{ formData.type === 'excel' ? '上传并导入' : '测试连接' }}
               </el-button>
-              <el-button type="success" @click="previewData" :loading="loading" v-if="formData.type !== 'Excel'">
+              <el-button type="success" @click="previewData" :loading="loading" v-if="formData.type !== 'excel'">
                 预览数据
               </el-button>
-              <el-button type="info" @click="saveDataSource" :loading="loading" v-if="formData.type !== 'Excel'">
+              <el-button type="info" @click="saveDataSource" :loading="loading" v-if="formData.type !== 'excel'">
                 保存数据源
               </el-button>
             </el-form-item>
@@ -286,7 +286,11 @@ const formRef = ref<FormInstance>()
 const activeTab = ref('connect')
 
 // 支持的数据源类型
-const supportedTypes = ref(['MySQL', 'MongoDB', 'Excel'])
+const supportedTypes = ref([
+  { value: 'mysql', label: 'MySQL' },
+  { value: 'mongodb', label: 'MongoDB' },
+  { value: 'excel', label: 'Excel' }
+])
 
 // 连接状态
 const connected = ref(false)
@@ -295,13 +299,13 @@ const showPreview = ref(false)
 
 // 表单数据
 const formData = ref({
-  type: 'MySQL',
+  type: 'mysql',
   name: '',
   host: '127.0.0.1',
   port: 3306,
   user: 'root',
-  password: 'your_password_here',
-  database: 'shop',
+  password: '',
+  database: '',
   file: null as File | null
 })
 
@@ -341,8 +345,8 @@ const handleTypeChange = (type: string) => {
     host: '127.0.0.1',
     port: 3306,
     user: 'root',
-    password: 'your_password_here',
-    database: 'shop',
+    password: '',
+    database: '',
     file: null
   }
 }
@@ -367,7 +371,7 @@ const handleSubmit = async () => {
       loading.value = true
       
       try {
-        if (formData.value.type === 'Excel') {
+        if (formData.value.type === 'excel') {
           // 上传Excel文件
           if (!formData.value.file) {
             ElMessage.error('请选择Excel文件')
@@ -414,7 +418,7 @@ const testConnection = async () => {
       try {
         // 调用API测试连接
         const config: DataSourceConfig = {
-          type: formData.value.type.toLowerCase(),
+          type: formData.value.type,
           host: formData.value.host,
           port: formData.value.port,
           user: formData.value.user,
@@ -463,7 +467,7 @@ const previewData = async () => {
       try {
         // 使用API连接数据库
         const config: DataSourceConfig = {
-          type: formData.value.type.toLowerCase(),
+          type: formData.value.type,
           host: formData.value.host,
           port: formData.value.port,
           user: formData.value.user,
@@ -529,7 +533,7 @@ const saveDataSource = async () => {
       try {
         // 构建数据源配置
         const config: DataSourceConfig = {
-          type: formData.value.type.toLowerCase(),
+          type: formData.value.type,
           host: formData.value.host,
           port: formData.value.port,
           user: formData.value.user,
@@ -540,8 +544,14 @@ const saveDataSource = async () => {
         // 构建保存请求
         const request: DataSourceCreateRequest = {
           name: formData.value.name,
-          type: formData.value.type.toLowerCase(),
-          config: config
+          type: formData.value.type,
+          config: {
+            host: formData.value.host,
+            port: formData.value.port,
+            user: formData.value.user,
+            password: formData.value.password,
+            database: formData.value.database
+          }
         }
         
         // 调用API保存数据源
@@ -553,6 +563,12 @@ const saveDataSource = async () => {
             message: `数据源 ${response.name} 已保存`,
             type: 'success'
           })
+          
+          // 重新加载数据源列表
+          loadSavedDataSources()
+          
+          // 切换到数据源管理标签页
+          activeTab.value = 'manage'
         } else {
           ElNotification({
             title: '保存失败',
@@ -563,11 +579,30 @@ const saveDataSource = async () => {
       } catch (error: any) {
         console.error('保存数据源失败:', error)
         
-        ElNotification({
-          title: '保存失败',
-          message: '保存数据源失败',
-          type: 'error'
-        })
+        // 显示更详细的错误信息
+        if (error.response) {
+          console.error('错误状态码:', error.response.status)
+          console.error('错误详情:', error.response.data)
+          ElNotification({
+            title: '保存失败',
+            message: error.response.data?.detail || '保存数据源失败',
+            type: 'error'
+          })
+        } else if (error.request) {
+          console.error('未收到响应:', error.request)
+          ElNotification({
+            title: '保存失败',
+            message: '服务器未响应',
+            type: 'error'
+          })
+        } else {
+          console.error('请求配置错误:', error.message)
+          ElNotification({
+            title: '保存失败',
+            message: error.message || '保存数据源失败',
+            type: 'error'
+          })
+        }
       } finally {
         loading.value = false
       }
@@ -677,8 +712,14 @@ const loadSavedDataSources = async () => {
   loadingSavedDataSources.value = true
   
   try {
+    // 调用API获取已保存的数据源
     const response = await getDataSources()
-    savedDataSources.value = response
+    savedDataSources.value = response || []
+    
+    // 如果没有保存的数据源，不显示错误提示
+    if (savedDataSources.value.length === 0) {
+      console.log('当前没有保存的数据源')
+    }
   } catch (error: any) {
     console.error('获取已保存的数据源失败:', error)
     ElMessage.error('获取已保存的数据源失败')
@@ -708,7 +749,7 @@ const connectToSavedDataSource = async (dataSource: DataSourceDetail) => {
     
     // 调用API连接数据源
     const config: DataSourceConfig = {
-      type: detail.type.toLowerCase(),
+      type: detail.type,
       host: formData.value.host,
       port: formData.value.port,
       user: formData.value.user,

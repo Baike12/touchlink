@@ -70,7 +70,7 @@ start_app() {
     echo $APP_PID > "$LOG_DIR/app.pid"
     
     echo -e "${GREEN}TouchLink前端服务已启动，PID: $APP_PID${NC}"
-    echo -e "${GREEN}前端地址: http://localhost:8000${NC}"
+    echo -e "${GREEN}前端地址: http://localhost:3000${NC}"
     echo -e "${YELLOW}按 Ctrl+C 停止服务${NC}"
     
     # 等待用户中断
