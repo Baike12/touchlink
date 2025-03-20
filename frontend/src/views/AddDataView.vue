@@ -110,29 +110,50 @@
         <el-button @click="backToTablesList">返回表格列表</el-button>
       </div>
       
-      <el-form :model="dataForm" label-width="120px">
-        <el-form-item v-for="column in currentTable.columns" :key="column.name" :label="column.name">
-          <el-input 
-            v-if="column.type !== 'timestamp'"
-            v-model="dataForm[column.name]" 
-            :placeholder="`请输入${column.name}`"
-            :type="getInputType(column.type)"
-          ></el-input>
-          <el-date-picker
-            v-else
-            v-model="dataForm[column.name]"
-            type="datetime"
-            placeholder="选择日期时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            clearable
-          ></el-date-picker>
-        </el-form-item>
-        
-        <div class="form-actions">
-          <el-button type="primary" @click="addData" :loading="loading">添加数据</el-button>
+      <!-- 编辑表格 -->
+      <div class="edit-table-section">
+        <el-table :data="editingData" border style="width: 100%; margin-bottom: 20px;">
+          <el-table-column 
+            v-for="column in currentTable.columns" 
+            :key="column.name"
+            :prop="column.name"
+            :label="column.name"
+          >
+            <template #default="scope">
+              <el-input 
+                v-if="column.type !== 'timestamp'"
+                v-model="scope.row[column.name]" 
+                :placeholder="`请输入${column.name}`"
+                :type="getInputType(column.type)"
+              ></el-input>
+              <el-date-picker
+                v-else
+                v-model="scope.row[column.name]"
+                type="datetime"
+                placeholder="选择日期时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                clearable
+                style="width: 100%"
+              ></el-date-picker>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="120">
+            <template #default="scope">
+              <el-button 
+                type="danger" 
+                size="small" 
+                @click="removeEditingRow(scope.$index)"
+              >删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <div class="table-actions">
+          <el-button type="primary" @click="addNewRow">添加行</el-button>
+          <el-button type="success" @click="submitData" :loading="loading">提交数据</el-button>
         </div>
-      </el-form>
+      </div>
       
       <!-- 显示已添加的数据 -->
       <div class="data-display" v-if="tableData.length > 0">
@@ -177,8 +198,8 @@ const currentTable = ref<Table | null>(null)
 // 是否显示创建表单
 const showCreateTable = ref(false)
 
-// 数据表单
-const dataForm = reactive<Record<string, any>>({})
+// 编辑中的数据
+const editingData = ref<Record<string, any>[]>([])
 
 // 表格数据
 const tableData = ref<any[]>([])
@@ -212,14 +233,11 @@ const loadTables = async () => {
 const selectTable = async (table: Table) => {
   currentTable.value = table
   
-  // 清空数据表单
-  Object.keys(dataForm).forEach(key => {
-    delete dataForm[key]
-  })
+  // 清空编辑数据
+  editingData.value = []
   
-  table.columns.forEach(column => {
-    dataForm[column.name] = ''
-  })
+  // 添加一行空数据
+  addNewRow()
   
   // 加载表格数据
   try {
@@ -284,22 +302,38 @@ const createTable = async () => {
   }
 }
 
-// 添加数据
-const addData = async () => {
-  if (!currentTable.value) return
+// 添加新行
+const addNewRow = () => {
+  const newRow: Record<string, any> = {}
+  if (currentTable.value) {
+    currentTable.value.columns.forEach(column => {
+      newRow[column.name] = ''
+    })
+  }
+  editingData.value.push(newRow)
+}
+
+// 删除编辑中的行
+const removeEditingRow = (index: number) => {
+  editingData.value.splice(index, 1)
+}
+
+// 提交数据
+const submitData = async () => {
+  if (!currentTable.value || editingData.value.length === 0) return
   
   try {
     loading.value = true
-    const response = await addTableData(currentTable.value.tableName, dataForm)
+    
+    // 逐个提交数据
+    for (const rowData of editingData.value) {
+      const response = await addTableData(currentTable.value.tableName, rowData)
+      tableData.value.push(response)
+    }
+    
+    // 清空编辑数据
+    editingData.value = []
     ElMessage.success('数据添加成功')
-    
-    // 添加到表格数据
-    tableData.value.push(response)
-    
-    // 清空表单
-    currentTable.value.columns.forEach(column => {
-      dataForm[column.name] = ''
-    })
   } catch (error: any) {
     console.error('添加数据失败:', error)
     ElMessage.error('添加数据失败: ' + (error.response?.data?.detail || error.message))
@@ -454,5 +488,16 @@ const formatDate = (dateStr?: string) => {
 
 .data-display {
   margin-top: 30px;
+}
+
+.edit-table-section {
+  margin-bottom: 30px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 </style>
