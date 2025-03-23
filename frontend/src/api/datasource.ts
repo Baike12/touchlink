@@ -1,12 +1,8 @@
 import { get, post, del } from './index'
 
 // 数据源类型
-export interface BaseDataSourceConfig {
-  type: 'mysql' | 'mongodb' | 'excel'
-}
-
-export interface DatabaseConfig extends BaseDataSourceConfig {
-  type: 'mysql' | 'mongodb'
+export interface DataSourceConfig {
+  type: string
   host: string
   port: number
   user: string
@@ -14,17 +10,9 @@ export interface DatabaseConfig extends BaseDataSourceConfig {
   database: string
 }
 
-export interface ExcelConfig extends BaseDataSourceConfig {
-  type: 'excel'
-  file_path: string
-  table_name: string
-}
-
-export type DataSourceConfig = DatabaseConfig | ExcelConfig
-
 export interface DataSourceCreateRequest {
   name: string
-  type: 'mysql' | 'mongodb' | 'excel'
+  type: string
   config: DataSourceConfig
 }
 
@@ -131,7 +119,9 @@ export function deleteDataSource(id: string) {
 }
 
 // 上传Excel文件
-export function uploadExcelFile(formData: FormData) {
+export function uploadExcelFile(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
   return post<{
     file_path: string
     table_name: string

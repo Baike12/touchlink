@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field, validator, field_validator, model_validator
+from pydantic import BaseModel, Field, validator
 
 from src.core.data_sources import DataSourceFactory
 from src.core.services import DataSourceService
@@ -23,35 +23,14 @@ _temp_connection_config = None
 class DataSourceConnectionConfig(BaseModel):
     """数据源连接配置"""
     type: str = Field(..., description="数据源类型，如mysql")
-    # 数据库类型数据源的配置
-    host: Optional[str] = Field(None, description="主机地址")
-    port: Optional[int] = Field(None, description="端口")
-    user: Optional[str] = Field(None, description="用户名")
-    password: Optional[str] = Field(None, description="密码")
-    database: Optional[str] = Field(None, description="数据库名")
-    # Excel类型数据源的配置
-    file_path: Optional[str] = Field(None, description="Excel文件路径")
-    table_name: Optional[str] = Field(None, description="要创建的MySQL表名")
-    
-    @field_validator('type')
-    @classmethod
-    def validate_type(cls, v):
-        if v not in ['mysql', 'mongodb', 'excel']:
-            raise ValueError("不支持的数据源类型")
-        return v
-    
-    @model_validator(mode='after')
-    def validate_fields(self):
-        if self.type == 'excel':
-            if not self.file_path or not self.table_name:
-                raise ValueError("Excel数据源必须提供file_path和table_name")
-        else:
-            if not all([self.host, self.port, self.user, self.password, self.database]):
-                raise ValueError("数据库类型数据源必须提供host、port、user、password和database")
-        return self
+    host: str = Field(..., description="主机地址")
+    port: int = Field(..., description="端口")
+    user: str = Field(..., description="用户名")
+    password: str = Field(..., description="密码")
+    database: str = Field(..., description="数据库名")
     
     class Config:
-        json_schema_extra = {
+        schema_extra = {
             "example": {
                 "type": "mysql",
                 "host": "localhost",

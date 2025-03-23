@@ -4,7 +4,12 @@ import { ElMessage } from 'element-plus'
 
 // 根据当前环境确定API基础URL
 const getBaseUrl = () => {
-  // 始终使用相对路径，让代理处理转发
+  const hostname = window.location.hostname;
+  // 如果是在Linux服务器上运行
+  if (hostname === '101.37.118.6') {
+    return '/api/v1';  // 通过前端代理访问后端
+  }
+  // 默认使用相对路径
   return '/api/v1';
 };
 

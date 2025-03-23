@@ -124,9 +124,7 @@ class ExcelDataSource(DataSource):
             {
                 "name": column["name"],
                 "type": str(column["type"]),
-                "nullable": column["nullable"],
-                "default": column.get("default"),
-                "primary_key": column.get("primary_key", False)
+                "nullable": column["nullable"]
             }
             for column in columns
         ]
