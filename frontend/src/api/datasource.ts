@@ -1,8 +1,12 @@
 import { get, post, del } from './index'
 
 // 数据源类型
-export interface DataSourceConfig {
-  type: string
+export interface BaseDataSourceConfig {
+  type: 'mysql' | 'mongodb' | 'excel'
+}
+
+export interface DatabaseConfig extends BaseDataSourceConfig {
+  type: 'mysql' | 'mongodb'
   host: string
   port: number
   user: string
@@ -10,9 +14,17 @@ export interface DataSourceConfig {
   database: string
 }
 
+export interface ExcelConfig extends BaseDataSourceConfig {
+  type: 'excel'
+  file_path: string
+  table_name: string
+}
+
+export type DataSourceConfig = DatabaseConfig | ExcelConfig
+
 export interface DataSourceCreateRequest {
   name: string
-  type: string
+  type: 'mysql' | 'mongodb' | 'excel'
   config: DataSourceConfig
 }
 

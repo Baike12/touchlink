@@ -274,6 +274,8 @@ import {
   type TableSchemaResponse,
   type TableDataResponse,
   type DataSourceConfig,
+  type DatabaseConfig,
+  type ExcelConfig,
   type DataSourceCreateRequest,
   type DataSourceDetail,
   getDataSourceDetail
@@ -298,7 +300,18 @@ const loading = ref(false)
 const showPreview = ref(false)
 
 // 表单数据
-const formData = ref({
+interface FormData {
+  type: 'mysql' | 'mongodb' | 'excel'
+  name: string
+  host: string
+  port: number
+  user: string
+  password: string
+  database: string
+  file: File | null
+}
+
+const formData = ref<FormData>({
   type: 'mysql',
   name: '',
   host: '127.0.0.1',
@@ -306,7 +319,7 @@ const formData = ref({
   user: 'root',
   password: '',
   database: '',
-  file: null as File | null
+  file: null
 })
 
 // 表单验证规则
@@ -378,13 +391,43 @@ const handleSubmit = async () => {
             return
           }
           
-          const response = await uploadExcelFile(formData.value.file)
+          // 上传文件
+          const uploadResponse = await uploadExcelFile(formData.value.file)
           
           ElNotification({
             title: '上传成功',
-            message: response.message,
+            message: uploadResponse.message,
             type: 'success'
           })
+          
+          // 连接数据源
+          const config: DataSourceConfig = {
+            type: 'excel',
+            file_path: uploadResponse.file_path,
+            table_name: uploadResponse.table_name
+          }
+          
+          const connectResponse = await apiConnectDataSource(config)
+          
+          if (connectResponse && connectResponse.status === 'success') {
+            connected.value = true
+            showPreview.value = true
+            
+            ElNotification({
+              title: '连接成功',
+              message: '数据源连接成功，正在加载数据预览',
+              type: 'success'
+            })
+            
+            // 加载表列表
+            loadTables()
+          } else {
+            ElNotification({
+              title: '连接失败',
+              message: connectResponse?.message || '数据源连接失败',
+              type: 'error'
+            })
+          }
           
           // 重置表单
           formRef.value.resetFields()
@@ -412,12 +455,12 @@ const testConnection = async () => {
   if (!formRef.value) return
   
   await formRef.value.validate(async (valid) => {
-    if (valid) {
+    if (valid && formData.value.type !== 'excel') {
       loading.value = true
       
       try {
         // 调用API测试连接
-        const config: DataSourceConfig = {
+        const config: DatabaseConfig = {
           type: formData.value.type,
           host: formData.value.host,
           port: formData.value.port,
@@ -532,26 +575,29 @@ const saveDataSource = async () => {
       
       try {
         // 构建数据源配置
-        const config: DataSourceConfig = {
-          type: formData.value.type,
-          host: formData.value.host,
-          port: formData.value.port,
-          user: formData.value.user,
-          password: formData.value.password,
-          database: formData.value.database
-        }
-        
-        // 构建保存请求
-        const request: DataSourceCreateRequest = {
-          name: formData.value.name,
-          type: formData.value.type,
-          config: {
+        let config: DataSourceConfig
+        if (formData.value.type === 'excel') {
+          config = {
+            type: 'excel',
+            file_path: '',  // 这里应该从上传响应中获取
+            table_name: ''  // 这里应该从上传响应中获取
+          }
+        } else {
+          config = {
+            type: formData.value.type,
             host: formData.value.host,
             port: formData.value.port,
             user: formData.value.user,
             password: formData.value.password,
             database: formData.value.database
           }
+        }
+        
+        // 构建保存请求
+        const request: DataSourceCreateRequest = {
+          name: formData.value.name,
+          type: formData.value.type,
+          config
         }
         
         // 调用API保存数据源
@@ -578,31 +624,11 @@ const saveDataSource = async () => {
         }
       } catch (error: any) {
         console.error('保存数据源失败:', error)
-        
-        // 显示更详细的错误信息
-        if (error.response) {
-          console.error('错误状态码:', error.response.status)
-          console.error('错误详情:', error.response.data)
-          ElNotification({
-            title: '保存失败',
-            message: error.response.data?.detail || '保存数据源失败',
-            type: 'error'
-          })
-        } else if (error.request) {
-          console.error('未收到响应:', error.request)
-          ElNotification({
-            title: '保存失败',
-            message: '服务器未响应',
-            type: 'error'
-          })
-        } else {
-          console.error('请求配置错误:', error.message)
-          ElNotification({
-            title: '保存失败',
-            message: error.message || '保存数据源失败',
-            type: 'error'
-          })
-        }
+        ElNotification({
+          title: '保存失败',
+          message: error.message || '保存数据源失败',
+          type: 'error'
+        })
       } finally {
         loading.value = false
       }
@@ -736,26 +762,38 @@ const connectToSavedDataSource = async (dataSource: DataSourceDetail) => {
     
     // 设置表单数据
     formData.value.name = detail.name
-    formData.value.type = detail.type
+    formData.value.type = detail.type as 'mysql' | 'mongodb' | 'excel'
     
     // 使用后端返回的配置信息
     if (detail.config) {
-      formData.value.host = detail.config.host
-      formData.value.port = detail.config.port
-      formData.value.user = detail.config.user
-      formData.value.password = detail.config.password
-      formData.value.database = detail.config.database
+      if (detail.type === 'excel') {
+        const excelConfig = detail.config as ExcelConfig
+        // Excel数据源的处理
+      } else {
+        const dbConfig = detail.config as DatabaseConfig
+        formData.value.host = dbConfig.host
+        formData.value.port = dbConfig.port
+        formData.value.user = dbConfig.user
+        formData.value.password = dbConfig.password
+        formData.value.database = dbConfig.database
+      }
     }
     
     // 调用API连接数据源
-    const config: DataSourceConfig = {
-      type: detail.type,
-      host: formData.value.host,
-      port: formData.value.port,
-      user: formData.value.user,
-      password: formData.value.password,
-      database: formData.value.database
-    }
+    const config: DataSourceConfig = detail.type === 'excel'
+      ? {
+          type: 'excel',
+          file_path: (detail.config as ExcelConfig).file_path,
+          table_name: (detail.config as ExcelConfig).table_name
+        }
+      : {
+          type: detail.type as 'mysql' | 'mongodb',
+          host: formData.value.host,
+          port: formData.value.port,
+          user: formData.value.user,
+          password: formData.value.password,
+          database: formData.value.database
+        }
     
     // 调用API连接数据源
     const response = await apiConnectDataSource(config)

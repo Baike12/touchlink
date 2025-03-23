@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+每次修改完后端你自己模拟一下请求看看对不对
+这个项目的后端要在名为touchlink的conda环境中运行

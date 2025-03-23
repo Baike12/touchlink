@@ -8,6 +8,7 @@ from src.config.settings import CORS_ORIGINS, UPLOAD_DIR
 from src.api.v1 import api_router
 from src.config.init_db import init_db
 from src.config.settings import Settings
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # 加载环境变量
 load_dotenv()
@@ -32,7 +33,11 @@ app.add_middleware(
 )
 
 # 添加异常处理中间件
-app.middleware("http")(exception_handler_middleware)
+class ExceptionMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        return await exception_handler_middleware(request, call_next)
+
+app.add_middleware(ExceptionMiddleware)
 
 # 注册路由
 app.include_router(api_router, prefix="/api")
