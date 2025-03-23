@@ -82,7 +82,7 @@
               <el-button type="primary" @click="handleSubmit" :loading="loading">
                 {{ formData.type === 'excel' ? '上传并导入' : '测试连接' }}
               </el-button>
-              <el-button type="success" @click="previewData" :loading="loading" v-if="formData.type !== 'excel'">
+              <el-button type="success" @click="previewData" :loading="loading">
                 预览数据
               </el-button>
               <el-button type="info" @click="saveDataSource" :loading="loading" v-if="formData.type !== 'excel'">
@@ -300,27 +300,35 @@ const loading = ref(false)
 const showPreview = ref(false)
 
 // 表单数据
-interface FormData {
-  type: 'mysql' | 'mongodb' | 'excel'
-  name: string
-  host: string
-  port: number
-  user: string
-  password: string
-  database: string
-  file: File | null
-}
-
-const formData = ref<FormData>({
+const formData = ref<{
+  type: 'mysql' | 'mongodb' | 'excel';
+  name: string;
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
+  file: File | null;
+}>({
   type: 'mysql',
   name: '',
-  host: '127.0.0.1',
+  host: '',
   port: 3306,
-  user: 'root',
+  user: '',
   password: '',
   database: '',
   file: null
 })
+
+// 上传响应
+interface UploadResponse {
+  file_path: string;
+  table_name: string;
+  original_filename: string;
+  message: string;
+}
+
+const uploadResponse = ref<UploadResponse | null>(null)
 
 // 表单验证规则
 const formRules = {
@@ -349,33 +357,38 @@ const pageSize = ref(100)
 const savedDataSources = ref<DataSourceDetail[]>([])
 const loadingSavedDataSources = ref(false)
 
+// 添加当前数据源ID
+const currentDataSourceId = ref<string>('')
+
 // 处理数据源类型变更
-const handleTypeChange = (type: string) => {
-  // 重置表单数据
-  formData.value = {
-    type,
-    name: '',
-    host: '127.0.0.1',
-    port: 3306,
-    user: 'root',
-    password: '',
-    database: '',
-    file: null
-  }
+const handleTypeChange = () => {
+  // 重置表单
+  formRef.value?.resetFields()
+  // 重置上传响应
+  uploadResponse.value = null
+  // 重置预览状态
+  showPreview.value = false
+  connected.value = false
+  // 清除当前数据源ID
+  currentDataSourceId.value = ''
+  // 清除表格相关数据
+  tables.value = []
+  selectedTable.value = ''
+  tableData.value = { columns: [], data: [] }
+  tableSchema.value = { table_name: '', columns: [] }
 }
 
-// 处理文件选择
-const handleFileChange = (uploadFile: UploadFile) => {
-  formData.value.file = uploadFile.raw || null
-  formData.value.name = uploadFile.name.split('.')[0] // 使用文件名作为数据源名称
+// 处理文件上传
+const handleFileChange = (file: any) => {
+  formData.value.file = file.raw
 }
 
-// 处理超出文件数限制
+// 处理文件超出限制
 const handleExceed = () => {
   ElMessage.warning('只能上传一个文件')
 }
 
-// 处理提交
+// 处理表单提交
 const handleSubmit = async () => {
   if (!formRef.value) return
   
@@ -387,24 +400,27 @@ const handleSubmit = async () => {
         if (formData.value.type === 'excel') {
           // 上传Excel文件
           if (!formData.value.file) {
-            ElMessage.error('请选择Excel文件')
+            ElMessage.warning('请选择Excel文件')
             return
           }
           
-          // 上传文件
-          const uploadResponse = await uploadExcelFile(formData.value.file)
+          const formDataObj = new FormData()
+          formDataObj.append('file', formData.value.file)
+          
+          const response = await uploadExcelFile(formDataObj)
+          uploadResponse.value = response
           
           ElNotification({
             title: '上传成功',
-            message: uploadResponse.message,
+            message: '文件上传成功',
             type: 'success'
           })
           
           // 连接数据源
           const config: DataSourceConfig = {
             type: 'excel',
-            file_path: uploadResponse.file_path,
-            table_name: uploadResponse.table_name
+            file_path: response.file_path,
+            table_name: response.table_name
           }
           
           const connectResponse = await apiConnectDataSource(config)
@@ -421,6 +437,17 @@ const handleSubmit = async () => {
             
             // 加载表列表
             loadTables()
+            
+            // 保存数据源并获取ID
+            const saveRequest: DataSourceCreateRequest = {
+              name: response.table_name,  // 使用表名作为数据源名称
+              type: 'excel',
+              config
+            }
+            const saveResponse = await apiSaveDataSource(saveRequest)
+            if (saveResponse && saveResponse.id) {
+              currentDataSourceId.value = saveResponse.id
+            }
           } else {
             ElNotification({
               title: '连接失败',
@@ -430,7 +457,7 @@ const handleSubmit = async () => {
           }
           
           // 重置表单
-          formRef.value.resetFields()
+          formRef.value?.resetFields()
           
         } else {
           // 测试数据源连接
@@ -508,14 +535,27 @@ const previewData = async () => {
       loading.value = true
       
       try {
-        // 使用API连接数据库
-        const config: DataSourceConfig = {
-          type: formData.value.type,
-          host: formData.value.host,
-          port: formData.value.port,
-          user: formData.value.user,
-          password: formData.value.password,
-          database: formData.value.database
+        // 根据数据源类型构建不同的配置
+        let config: DataSourceConfig
+        if (formData.value.type === 'excel') {
+          if (!uploadResponse.value) {
+            ElMessage.warning('请先上传Excel文件')
+            return
+          }
+          config = {
+            type: 'excel',
+            file_path: uploadResponse.value.file_path,
+            table_name: uploadResponse.value.table_name
+          }
+        } else {
+          config = {
+            type: formData.value.type as 'mysql' | 'mongodb',
+            host: formData.value.host,
+            port: formData.value.port,
+            user: formData.value.user,
+            password: formData.value.password,
+            database: formData.value.database
+          }
         }
         
         const response = await apiConnectDataSource(config)
@@ -562,6 +602,7 @@ const disconnectDataSource = () => {
   selectedTable.value = ''
   tableData.value = { columns: [], data: [] }
   tableSchema.value = { table_name: '', columns: [] }
+  currentDataSourceId.value = ''  // 清除当前数据源ID
   ElMessage.success('已断开数据源连接')
 }
 
@@ -577,10 +618,14 @@ const saveDataSource = async () => {
         // 构建数据源配置
         let config: DataSourceConfig
         if (formData.value.type === 'excel') {
+          if (!uploadResponse.value) {
+            ElMessage.warning('请先上传Excel文件')
+            return
+          }
           config = {
             type: 'excel',
-            file_path: '',  // 这里应该从上传响应中获取
-            table_name: ''  // 这里应该从上传响应中获取
+            file_path: uploadResponse.value.file_path,
+            table_name: uploadResponse.value.table_name
           }
         } else {
           config = {
@@ -604,6 +649,8 @@ const saveDataSource = async () => {
         const response = await apiSaveDataSource(request)
         
         if (response && response.id) {
+          currentDataSourceId.value = response.id  // 设置当前数据源ID
+          
           ElNotification({
             title: '保存成功',
             message: `数据源 ${response.name} 已保存`,
@@ -642,8 +689,8 @@ const loadTables = async () => {
   
   try {
     console.log('开始加载表列表...');
-    // 调用API获取表列表
-    const response = await getTables()
+    // 调用API获取表列表，传入当前数据源ID
+    const response = await getTables(currentDataSourceId.value)
     console.log('获取到表列表响应:', response);
     
     if (response && response.tables) {
@@ -691,8 +738,8 @@ const loadTableData = async (tableName: string) => {
   loadingData.value = true
   
   try {
-    // 调用API获取表数据
-    const response = await getTableData(tableName, pageSize.value)
+    // 调用API获取表数据，传入当前数据源ID
+    const response = await getTableData(tableName, pageSize.value, currentDataSourceId.value)
     tableData.value = response
   } catch (error: any) {
     console.error('获取表数据失败:', error)
@@ -707,8 +754,8 @@ const loadTableSchema = async (tableName: string) => {
   loadingSchema.value = true
   
   try {
-    // 调用API获取表结构
-    const response = await getTableSchema(tableName)
+    // 调用API获取表结构，传入当前数据源ID
+    const response = await getTableSchema(tableName, currentDataSourceId.value)
     tableSchema.value = response
   } catch (error: any) {
     console.error('获取表结构失败:', error)
@@ -759,6 +806,7 @@ const connectToSavedDataSource = async (dataSource: DataSourceDetail) => {
   try {
     // 获取数据源详情
     const detail = await getDataSourceDetail(dataSource.id)
+    currentDataSourceId.value = dataSource.id  // 设置当前数据源ID
     
     // 设置表单数据
     formData.value.name = detail.name
@@ -768,7 +816,13 @@ const connectToSavedDataSource = async (dataSource: DataSourceDetail) => {
     if (detail.config) {
       if (detail.type === 'excel') {
         const excelConfig = detail.config as ExcelConfig
-        // Excel数据源的处理
+        // 保存Excel配置信息到uploadResponse
+        uploadResponse.value = {
+          file_path: excelConfig.file_path,
+          table_name: excelConfig.table_name,
+          original_filename: detail.name,
+          message: ''
+        }
       } else {
         const dbConfig = detail.config as DatabaseConfig
         formData.value.host = dbConfig.host
@@ -800,10 +854,11 @@ const connectToSavedDataSource = async (dataSource: DataSourceDetail) => {
     
     if (response && response.status === 'success') {
       connected.value = true
+      showPreview.value = true  // 显示预览
       
       ElNotification({
         title: '连接成功',
-        message: '数据源连接成功',
+        message: '数据源连接成功，正在加载数据预览',
         type: 'success'
       })
       

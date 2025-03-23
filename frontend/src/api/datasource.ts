@@ -131,9 +131,7 @@ export function deleteDataSource(id: string) {
 }
 
 // 上传Excel文件
-export function uploadExcelFile(file: File) {
-  const formData = new FormData()
-  formData.append('file', file)
+export function uploadExcelFile(formData: FormData) {
   return post<{
     file_path: string
     table_name: string
